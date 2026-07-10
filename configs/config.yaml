@@ -1,0 +1,19 @@
+# ============================================================
+# Project Configuration
+# All paths & parameters live here — NEVER hardcode them in code.
+# ============================================================
+
+# --- Data paths (relative to the project root) ---
+data:
+  raw_path: "data/raw/telco_churn.csv"
+  processed_dir: "data/processed"
+
+# --- Column settings ---
+columns:
+  target: "Churn"                # the column we're predicting
+  id_column: "customerID"        # identifier — dropped before modeling
+
+# --- Train/test split ---
+split:
+  test_size: 0.2                 # hold out 20% for testing
+  random_state: 42               # fixed seed → reproducible splits
