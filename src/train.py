@@ -6,6 +6,9 @@ run so they can be compared side by side. Each run records params, metrics,
 and the trained pipeline (preprocessing + model) as one artifact.
 """
 
+import shutil
+import subprocess
+
 import pandas as pd
 import mlflow
 import mlflow.sklearn
@@ -13,6 +16,7 @@ from mlflow.models import infer_signature
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
+from xgboost import XGBClassifier
 
 from src.config import load_config
 from src.logger import get_logger
@@ -30,7 +34,24 @@ logger = get_logger(__name__)
 MODEL_REGISTRY = {
     "LogisticRegression": LogisticRegression,
     "RandomForestClassifier": RandomForestClassifier,
+    "XGBClassifier": XGBClassifier,
 }
+
+
+def gpu_available() -> bool:
+    """Return True only if an NVIDIA GPU is visible (via nvidia-smi).
+
+    XGBoost silently downgrades to CPU when no GPU is present, so we detect
+    the GPU ourselves to (a) log it clearly and (b) set device='cpu'
+    explicitly on GPU-less machines (e.g. a CI server), avoiding noisy warnings.
+    """
+    if shutil.which("nvidia-smi") is None:
+        return False
+    try:
+        subprocess.run(["nvidia-smi"], capture_output=True, check=True)
+        return True
+    except Exception:
+        return False
 
 
 def create_classifier(model_type: str, params: dict):
@@ -40,6 +61,17 @@ def create_classifier(model_type: str, params: dict):
             f"Unknown model type '{model_type}'. "
             f"Available: {list(MODEL_REGISTRY.keys())}"
         )
+
+    params = dict(params)  # copy so we never mutate the config dict
+
+    # For XGBoost, gracefully fall back to CPU if no usable GPU is present.
+    if model_type == "XGBClassifier" and params.get("device") == "cuda":
+        if gpu_available():
+            logger.info("CUDA GPU detected — training XGBoost on GPU ⚡")
+        else:
+            logger.warning("No usable CUDA GPU — falling back to device='cpu' for XGBoost")
+            params["device"] = "cpu"
+
     return MODEL_REGISTRY[model_type](**params)
 
 
@@ -86,8 +118,13 @@ def train_single_model(model_name, model_cfg, data, feature_lists) -> dict:
         mlflow.log_metrics(metrics)
 
         signature = infer_signature(X_test, y_pred)
-        mlflow.sklearn.log_model(model, name="model", signature=signature,
-                                 input_example=X_test.head(2))
+        mlflow.sklearn.log_model(
+            model,
+            name="model",
+            signature=signature,
+            input_example=X_test.head(2),
+            serialization_format="cloudpickle",  # handles XGBoost; skops default rejects it
+        )
 
         logger.info(f"[{model_name}] " + " ".join(f"{k}={v:.4f}" for k, v in metrics.items()))
     return metrics
@@ -110,7 +147,6 @@ def train() -> None:
     for model_name, model_cfg in config["models"].items():
         results[model_name] = train_single_model(model_name, model_cfg, data, feature_lists)
 
-    # Report the leader by ROC-AUC.
     logger.info("===== Model comparison (by ROC-AUC) =====")
     for name, m in sorted(results.items(), key=lambda kv: kv[1]["roc_auc"], reverse=True):
         logger.info(f"  {name:22s} roc_auc={m['roc_auc']:.4f}  f1={m['f1']:.4f}")
