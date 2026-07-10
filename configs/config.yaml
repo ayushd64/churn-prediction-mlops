@@ -30,10 +30,19 @@ mlflow:
   tracking_uri: "sqlite:///mlflow.db"   # local SQLite backend (NOT the deprecated ./mlruns file store)
   experiment_name: "churn-prediction"
 
-# --- Model hyperparameters (baseline: Logistic Regression) ---
-model:
-  type: "LogisticRegression"
-  params:
-    max_iter: 1000
-    class_weight: "balanced"   # counteracts the ~26/74 class imbalance
-    random_state: 42           # reproducible training
+# --- Models to train & compare (each becomes its own MLflow run) ---
+models:
+  logistic_regression:
+    type: "LogisticRegression"
+    params:
+      max_iter: 1000
+      class_weight: "balanced"
+      random_state: 42
+  random_forest:
+    type: "RandomForestClassifier"
+    params:
+      n_estimators: 200
+      max_depth: 12
+      class_weight: "balanced"
+      n_jobs: -1
+      random_state: 42
