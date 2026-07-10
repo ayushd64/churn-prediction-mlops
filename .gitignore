@@ -1,0 +1,37 @@
+# Virtual environment — huge and machine-specific, must never be committed
+venv/
+.venv/
+
+# Python bytecode cache — auto-generated, no need to track
+__pycache__/
+*.py[cod]
+
+# Secrets & environment variables — NEVER commit these
+.env
+
+# Jupyter autosave files
+.ipynb_checkpoints/
+
+# MLflow's local tracking folder (appears in a later phase)
+mlruns/
+
+# Data files — keep the folders (via .gitkeep) but ignore their contents
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Saved model binaries — large; MLflow will manage models
+models/*
+!models/.gitkeep
+
+# Log files
+logs/*
+!logs/.gitkeep
+
+# OS-generated junk
+.DS_Store
+Thumbs.db
+
+# VS Code editor settings (personal preference)
+.vscode/
