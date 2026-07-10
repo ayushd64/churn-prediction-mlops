@@ -35,3 +35,7 @@ Thumbs.db
 
 # VS Code editor settings (personal preference)
 .vscode/
+
+# MLflow local backend & artifacts
+mlflow.db
+mlartifacts/

@@ -24,3 +24,16 @@ features:
     - tenure
     - MonthlyCharges
     - TotalCharges
+
+# --- MLflow tracking ---
+mlflow:
+  tracking_uri: "sqlite:///mlflow.db"   # local SQLite backend (NOT the deprecated ./mlruns file store)
+  experiment_name: "churn-prediction"
+
+# --- Model hyperparameters (baseline: Logistic Regression) ---
+model:
+  type: "LogisticRegression"
+  params:
+    max_iter: 1000
+    class_weight: "balanced"   # counteracts the ~26/74 class imbalance
+    random_state: 42           # reproducible training
