@@ -7,6 +7,7 @@ come in as JSON; a churn prediction and probability go back out.
 """
 
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 import mlflow
 import pandas as pd
@@ -16,7 +17,6 @@ from pydantic import BaseModel
 from src.config import load_config
 from src.logger import get_logger
 from src.preprocessing import clean_data
-from pathlib import Path
 
 logger = get_logger(__name__)
 
@@ -60,7 +60,7 @@ class PredictionResponse(BaseModel):
     # config = load_config()
     # mlflow.set_tracking_uri(config["mlflow"]["tracking_uri"])
 
-    # model_uri = f"models:/{config['registry']['model_name']}@{config['registry']['champion_alias']}"
+    
     # logger.info(f"Loading model from {model_uri}")
     # ml_models["model"] = mlflow.sklearn.load_model(model_uri)
     # ml_models["id_column"] = config["columns"]["id_column"]
@@ -86,7 +86,9 @@ async def lifespan(app: FastAPI):
         ml_models["model"] = mlflow.sklearn.load_model(str(local_path))
     else:
         mlflow.set_tracking_uri(config["mlflow"]["tracking_uri"])
-        model_uri = f"models:/{config['registry']['model_name']}@{config['registry']['champion_alias']}"
+        name = config["registry"]["model_name"]
+        alias = config["registry"]["champion_alias"]
+        model_uri = f"models:/{name}@{alias}"
         logger.info(f"Local export not found — loading from registry: {model_uri}")
         ml_models["model"] = mlflow.sklearn.load_model(model_uri)
 

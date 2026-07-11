@@ -9,24 +9,24 @@ and the trained pipeline (preprocessing + model) as one artifact.
 import shutil
 import subprocess
 
-import pandas as pd
 import mlflow
 import mlflow.sklearn
+import pandas as pd
 from mlflow.models import infer_signature
-from sklearn.pipeline import Pipeline
-from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
 from xgboost import XGBClassifier
 
 from src.config import load_config
+from src.evaluation import evaluate_classification
 from src.logger import get_logger
 from src.preprocessing import (
-    clean_data,
-    separate_features_target,
-    get_feature_lists,
     build_preprocessor,
+    clean_data,
+    get_feature_lists,
+    separate_features_target,
 )
-from src.evaluation import evaluate_classification
 
 logger = get_logger(__name__)
 

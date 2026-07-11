@@ -14,7 +14,7 @@ model as one artifact (prevents train/serve skew).
 
 import pandas as pd
 from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 from src.config import load_config
 from src.logger import get_logger

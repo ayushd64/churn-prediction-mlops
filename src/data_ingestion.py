@@ -5,8 +5,9 @@ Loads the raw churn dataset, performs a reproducible, STRATIFIED
 train/test split, and saves the resulting sets to data/processed/.
 """
 
-import pandas as pd
 from pathlib import Path
+
+import pandas as pd
 from sklearn.model_selection import train_test_split
 
 from src.config import load_config

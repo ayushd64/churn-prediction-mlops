@@ -1,0 +1,10 @@
+[tool.pytest.ini_options]
+pythonpath = ["."]     # lets tests do `from src... import ...` when run from the project root
+testpaths = ["tests"]  # where pytest looks for tests
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]  # pycodestyle errors, pyflakes, import sorting

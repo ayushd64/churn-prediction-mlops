@@ -7,9 +7,9 @@ Returns a plain dict so the caller (training, monitoring) can log or compare the
 
 from sklearn.metrics import (
     accuracy_score,
+    f1_score,
     precision_score,
     recall_score,
-    f1_score,
     roc_auc_score,
 )
 
