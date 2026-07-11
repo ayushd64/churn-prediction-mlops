@@ -14,7 +14,7 @@ COPY configs/ ./configs/
 COPY models/champion_model/ ./models/champion_model/
 
 # ---- Document the port the API listens on ----
-EXPOSE 7860
+EXPOSE 8080
 
 # ---- Launch the API (0.0.0.0 = reachable from outside the container) ----
-CMD ["uvicorn", "src.api:app", "--host", "0.0.0.0", "--port", "7860"]
+CMD ["uvicorn", "src.api:app", "--host", "0.0.0.0", "--port", "8080"]
