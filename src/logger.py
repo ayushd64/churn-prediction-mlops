@@ -47,10 +47,15 @@ def get_logger(name: str, log_file: str = "logs/pipeline.log") -> logging.Logger
 
     # Handler 2 — also write logs to a file.
     # Ensure the logs/ folder exists before writing to it.
-    Path(log_file).parent.mkdir(parents=True, exist_ok=True)
-    file_handler = logging.FileHandler(log_file, encoding="utf-8")
-    file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
+    # File logging — but degrade gracefully on read-only filesystems
+    # (e.g. cloud hosts like Hugging Face Spaces, where only /tmp is writable).
+    try:
+        Path(log_file).parent.mkdir(parents=True, exist_ok=True)
+        file_handler = logging.FileHandler(log_file)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+    except OSError:
+        logger.warning("Could not open log file '%s'; logging to console only.", log_file)
 
     return logger
 
