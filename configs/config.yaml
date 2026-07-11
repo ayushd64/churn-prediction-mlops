@@ -66,4 +66,8 @@ registry:
   model_name: "churn-model"
   primary_metric: "roc_auc"   # the winner is chosen by this metric
   champion_alias: "champion"  # alias marking the production model
+
+# --- Serving ---
+serving:
+  model_path: "models/champion_model"   # local export of the champion (baked into the Docker image)
   

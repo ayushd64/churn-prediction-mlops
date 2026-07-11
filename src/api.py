@@ -16,6 +16,7 @@ from pydantic import BaseModel
 from src.config import load_config
 from src.logger import get_logger
 from src.preprocessing import clean_data
+from pathlib import Path
 
 logger = get_logger(__name__)
 
@@ -53,21 +54,49 @@ class PredictionResponse(BaseModel):
     churn_probability: float
 
 
+# @asynccontextmanager
+# def lifespan(app: FastAPI):
+    # """Load the champion model once when the API starts up."""
+    # config = load_config()
+    # mlflow.set_tracking_uri(config["mlflow"]["tracking_uri"])
+
+    # model_uri = f"models:/{config['registry']['model_name']}@{config['registry']['champion_alias']}"
+    # logger.info(f"Loading model from {model_uri}")
+    # ml_models["model"] = mlflow.sklearn.load_model(model_uri)
+    # ml_models["id_column"] = config["columns"]["id_column"]
+    # logger.info("Model loaded and ready ✅")
+
+    # yield  # <-- API serves requests while suspended here
+
+    # ml_models.clear()  # cleanup on shutdown
+    # config = load_config()
+
+    # Prefer the locally exported model (used inside the Docker container, which
+    # has no MLflow backend). Fall back to the registry for local development.
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Load the champion model once when the API starts up."""
     config = load_config()
-    mlflow.set_tracking_uri(config["mlflow"]["tracking_uri"])
 
-    model_uri = f"models:/{config['registry']['model_name']}@{config['registry']['champion_alias']}"
-    logger.info(f"Loading model from {model_uri}")
-    ml_models["model"] = mlflow.sklearn.load_model(model_uri)
+    # Prefer the locally exported model (used inside the Docker container, which
+    # has no MLflow backend). Fall back to the registry for local development.
+    local_path = Path(config["serving"]["model_path"])
+    if local_path.exists():
+        logger.info(f"Loading model from local export: {local_path}")
+        ml_models["model"] = mlflow.sklearn.load_model(str(local_path))
+    else:
+        mlflow.set_tracking_uri(config["mlflow"]["tracking_uri"])
+        model_uri = f"models:/{config['registry']['model_name']}@{config['registry']['champion_alias']}"
+        logger.info(f"Local export not found — loading from registry: {model_uri}")
+        ml_models["model"] = mlflow.sklearn.load_model(model_uri)
+
     ml_models["id_column"] = config["columns"]["id_column"]
     logger.info("Model loaded and ready ✅")
 
     yield  # <-- API serves requests while suspended here
 
     ml_models.clear()  # cleanup on shutdown
+
 
 
 app = FastAPI(title="Churn Prediction API", version="1.0.0", lifespan=lifespan)
