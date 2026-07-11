@@ -39,3 +39,6 @@ Thumbs.db
 # MLflow local backend & artifacts
 mlflow.db
 mlartifacts/
+
+# Generated monitoring reports
+reports/

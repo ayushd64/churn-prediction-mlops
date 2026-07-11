@@ -70,4 +70,8 @@ registry:
 # --- Serving ---
 serving:
   model_path: "models/champion_model"   # local export of the champion (baked into the Docker image)
-  
+
+# --- Monitoring ---
+monitoring:
+  drift_threshold: 0.3                    # retrain if >=30% of columns drift
+  report_path: "reports/drift_report.html"
