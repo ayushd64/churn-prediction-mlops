@@ -1,0 +1,26 @@
+# Virtual environment
+venv/
+.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# MLflow local state — NOT needed (the model is baked in via the export)
+mlruns/
+mlartifacts/
+mlflow.db
+
+# Dev-only material not needed to serve
+data/
+logs/
+notebooks/
+
+# Git & test artifacts
+.git/
+.gitignore
+.pytest_cache/
+
+# Docker files themselves
+Dockerfile
+.dockerignore
